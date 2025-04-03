@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'accounts',
+    'django_softdelete',
 ]
 
 MIDDLEWARE = [
@@ -190,5 +191,5 @@ ENCRYPTION_KEY=os.getenv('ENCRYPTION_KEY')
 #     "POST",
 #     "PUT",
 # )
-CORS_ALLOW_ORIGINS_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True

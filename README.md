@@ -48,7 +48,7 @@ python manage.py runserver
 Upon successful registration, an activation link is sent via email.
 
 ### Activate account
-**GET** `/activate/<token>/`
+**GET** `accounts/activate/<token>/`
 
 ### Request password reset
 **POST** `accounts/password-reset/request/`
