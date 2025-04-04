@@ -23,6 +23,11 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from accounts.views import RegisterView
+from rest_framework.routers import DefaultRouter
+from documents.views import DocumentDetailViewSet
+
+router = DefaultRouter()
+router.register(r"documents", DocumentDetailViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,4 +36,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterView.as_view(), name='register'),
     path('accounts/', include('accounts.urls')),
+    path('', include(router.urls))
 ] + debug_toolbar_urls()

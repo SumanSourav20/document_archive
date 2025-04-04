@@ -1,12 +1,14 @@
 import datetime
+from pathlib import Path
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
-from django_filters import SoftDeleteModel
-from auditlog.registry import auditlog
+from django_softdelete.models import SoftDeleteModel
+if settings.AUDIT_LOG_ENABLED:
+    from auditlog.registry import auditlog
 
 User = get_user_model()
 
@@ -79,7 +81,7 @@ class DocumentType(models.Model):
         verbose_name_plural = _("document types")
 
 
-class StoragePath(models.Models):
+class StoragePath(models.Model):
     path = models.TextField(
         _("path"),
     )
@@ -102,7 +104,7 @@ class Document(models.Model):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        realated_name="documents",
+        related_name="documents",
         verbose_name=_("projects")
     )
 
@@ -248,6 +250,51 @@ class Document(models.Model):
         if self.title:
             res += f" {self.title}"
         return res
+    
+    @property
+    def has_archive_version(self) -> bool:
+        return self.archive_filename is not None 
+    
+    @property
+    def archive_path(self) -> Path | None:
+        if self.has_archive_version:
+            return  (settings.ARCHIVE_DIR/ Path(str(self.archive_filename))).resolve()
+        else:
+            return None
+       
+    @property
+    def archive_file(self) -> Path:
+        return Path(self.archive_path).open("rb")
+
+    @property
+    def source_path(self) -> Path:
+        fname = str(self.filename)
+        if self.storage_type == self.STORAGE_TYPE_GPG:
+            fname += ".gpg"
+        
+        return (settings.ORIGINAL_DIR / Path(fname)).resolve()
+    
+    @property
+    def source_file(self): 
+        return Path(self.source_path).open("rb")
+    
+    @property
+    def thumbnail_path(self) -> Path:
+        webp_file_name = f"{self.pk:07}.webp"
+        if self.storage_type == self.STORAGE_TYPE_GPG:
+            webp_file_name += ".gpg"
+
+        webp_file_path = settings.THUMBNAIL_DIR / Path(webp_file_name)
+
+        return webp_file_path.resolve()
+    
+    @property
+    def thumbnail_file(self):
+        return Path(self.thumbnail_path).open("rb")
+    
+    @property
+    def created_date(self):
+        return timezone.localdate(self.created)
     
 
 class Note(SoftDeleteModel):

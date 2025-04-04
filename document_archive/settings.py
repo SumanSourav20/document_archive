@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'accounts',
     'django_softdelete',
     'auditlog',
+    'documents',
 ]
 
 MIDDLEWARE = [
@@ -195,3 +196,9 @@ ENCRYPTION_KEY=os.getenv('ENCRYPTION_KEY')
 # )
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+THUMBNAIL_DIR="./"
+AUDIT_LOG_ENABLED=False
+ORIGINAL_DIR="./"
+ARCHIVE_DIR="./"
