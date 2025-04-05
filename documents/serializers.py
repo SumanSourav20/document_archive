@@ -135,3 +135,93 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
     def get_modified_date(self, obj):
         return timezone.localdate(obj.modified)
         
+class PostDocumentSerializer(serializers.Serializer):
+    created = serializers.DateTimeField(
+        label="Created",
+        allow_null=True,
+        write_only=True,
+        required=False,
+    )
+
+    document = serializers.FileField(
+        label="Document",
+        write_only=True,
+    )
+
+    title = serializers.CharField(
+        label="Title",
+        write_only=True,
+        required=False,
+    )
+
+    correspondent = serializers.PrimaryKeyRelatedField(
+        queryset=Correspondent.objects.all(),
+        label="Correspondent",
+        allow_null=True,
+        write_only=True,
+        required=False,
+    )
+
+    document_type = serializers.PrimaryKeyRelatedField(
+        queryset=DocumentType.objects.all(),
+        label="Document type",
+        allow_null=True,
+        write_only=True,
+        required=False,
+    )
+
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all(),
+        label="Tags",
+        write_only=True,
+        required=False,
+    )
+
+    Project = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Project.objects.all(),
+        label="Project",
+        write_only=True,
+        required=False,
+    )
+
+
+    def validate_document(self, document):
+        document_data = document.file.read()
+        
+
+        # if not is_mime_type_supported(mime_type):
+        #     if (
+        #         mime_type in settings.CONSUMER_PDF_RECOVERABLE_MIME_TYPES
+        #         and document.name.endswith(
+        #             ".pdf",
+        #         )
+        #     ):
+        #         # If the file is an invalid PDF, we can try to recover it later in the consumer
+        #         mime_type = "application/pdf"
+        #     else:
+        #         raise serializers.ValidationError(
+        #             _("File type %(type)s not supported") % {"type": mime_type},
+        #         )
+
+        return document.name, document_data
+
+    def validate_correspondent(self, correspondent):
+        if correspondent:
+            return correspondent.id
+        else:
+            return None
+
+    def validate_document_type(self, document_type):
+        if document_type:
+            return document_type.id
+        else:
+            return None
+
+    def validate_tags(self, tags):
+        if tags:
+            return [tag.id for tag in tags]
+        else:
+            return None
+        

@@ -24,10 +24,18 @@ from rest_framework_simplejwt.views import (
 )
 from accounts.views import RegisterView
 from rest_framework.routers import DefaultRouter
-from documents.views import DocumentDetailViewSet
+from documents.views import (
+    DocumentDetailViewSet, 
+    PostDocumentView,
+    TagViewSet,
+    CorrespondentViewSet,
+    ProjectViewSet,
+)
 
 router = DefaultRouter()
 router.register(r"documents", DocumentDetailViewSet)
+router.register(r"projects", ProjectViewSet)
+router.register(r"tags", TagViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,5 +44,6 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterView.as_view(), name='register'),
     path('accounts/', include('accounts.urls')),
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('document/', PostDocumentView.as_view(), name="post-document")
 ] + debug_toolbar_urls()

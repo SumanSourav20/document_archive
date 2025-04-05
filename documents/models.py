@@ -177,7 +177,9 @@ class Document(models.Model):
 
     created = models.DateTimeField(
         _("created"), 
-        default=timezone.now, 
+        default=timezone.now,
+        null=True,
+        blank=True,
         db_index=True,
         help_text=_("Document Creation or Generation Date")
     )

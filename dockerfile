@@ -4,6 +4,8 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir pipenv
 
+RUN apt-get update && apt-get install -y libmagic-dev
+
 COPY Pipfile* ./
 
 RUN pipenv install

@@ -15,6 +15,9 @@ djangorestframework-simplejwt = "*"
 cryptography = "*"
 django-soft-delete = "*"
 django-auditlog = "*"
+python-magic = "*"
+pytest = "*"
+requests = "*"
 
 [dev-packages]
 
