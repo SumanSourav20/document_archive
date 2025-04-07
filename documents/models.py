@@ -314,8 +314,6 @@ class Note(SoftDeleteModel):
 
     document = models.ForeignKey(
         Document,
-        blank=True,
-        null=True,
         related_name="notes",
         on_delete=models.CASCADE,
         verbose_name=_("document"),

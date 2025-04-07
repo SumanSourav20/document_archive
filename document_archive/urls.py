@@ -25,17 +25,20 @@ from rest_framework_simplejwt.views import (
 from accounts.views import RegisterView
 from rest_framework.routers import DefaultRouter
 from documents.views import (
-    DocumentDetailViewSet, 
-    PostDocumentView,
+    DocumentDetailViewSet,
     TagViewSet,
     CorrespondentViewSet,
     ProjectViewSet,
+    DocumentTypeViewSet,
+    NoteViewSet,
 )
 
 router = DefaultRouter()
 router.register(r"documents", DocumentDetailViewSet)
 router.register(r"projects", ProjectViewSet)
 router.register(r"tags", TagViewSet)
+router.register(r"document-type", DocumentTypeViewSet)
+router.register(r"notes", NoteViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -45,5 +48,4 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('accounts/', include('accounts.urls')),
     path('', include(router.urls)),
-    path('document/', PostDocumentView.as_view(), name="post-document")
 ] + debug_toolbar_urls()

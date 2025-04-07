@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
 from documents.models import (
     Document,
@@ -13,11 +14,12 @@ from documents.models import (
 
 from documents.validators import hex_color_validator
 
+User = get_user_model()
 
 class DocumentTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Document
+        model = DocumentType
         fields = ["id", "name"]
         read_only_fileds = ["id"]
 
@@ -27,7 +29,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["id", "title", "descpription", "status", "status_display", "start_date"]
+        fields = ["id", "title", "description", "status", "status_display", "start_date"]
         read_only_fileds = ["id"]
 
     def get_status_display(self, obj):
@@ -46,7 +48,7 @@ class ProjectDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "title", "description", "status", "start_date", "documents"]
-        read_only_fileds = ["id"]
+        read_only_fields = ["id"]
 
     def get_documents(self, obj):
         documents = obj.documents.all()
@@ -70,7 +72,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ["id", "name",]
+        fields = ["id", "name", "color"]
         read_only_fileds = ["id",]
 
 
@@ -78,7 +80,7 @@ class DocumentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ["id", "title", "tags", "created_date", "page_count", "thumbnail_file"]
+        fields = ["id", "title", "tags", "created_date", "page_count",]
 
 
 class CorrespondentField(serializers.PrimaryKeyRelatedField):
@@ -106,11 +108,17 @@ class ProjectField(serializers.PrimaryKeyRelatedField):
         return Project.objects.all()
     
 class NotesSerializer(serializers.ModelSerializer):
+    document = serializers.PrimaryKeyRelatedField(
+        queryset=Document.objects.all(),
+        label="Document",
+        write_only=True,
+    )
     
     class Meta:
         model = Note
-        fields = ["id", "created", "note",]
+        fields = ["id", "created", "note", "document", "user",]
         ordering = ["-created"]
+        read_only_fields = ["id","created", "user"]
 
     
 class DocumentDetailSerializer(serializers.ModelSerializer):
@@ -119,14 +127,13 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
     tags = TagsField(many=True)
     document_type = DocumentTypeField(allow_null=True)
     notes = NotesSerializer(many=True, required=False, read_only=True)
-    # storage_path = StoragePathField(allow_null=True)
     added_date = serializers.SerializerMethodField()
     modified_date = serializers.SerializerMethodField()
     project_display = ProjectListSerializer(read_only=True)
 
     class Meta:
         model = Document
-        fields = ["id", "title", "tags", "created_date", "page_count", "correspondent", "added_date", "modified_date", "project", "project_display", "document_type", "notes"]
+        fields = ["id", "title", "tags", "created_date", "page_count", "correspondent", "added_date", "modified_date", "project", "project_display", "document_type", "notes",]
         read_only_fields = ["page_count"]
 
     def get_added_date(self, obj):
@@ -189,22 +196,6 @@ class PostDocumentSerializer(serializers.Serializer):
 
     def validate_document(self, document):
         document_data = document.file.read()
-        
-
-        # if not is_mime_type_supported(mime_type):
-        #     if (
-        #         mime_type in settings.CONSUMER_PDF_RECOVERABLE_MIME_TYPES
-        #         and document.name.endswith(
-        #             ".pdf",
-        #         )
-        #     ):
-        #         # If the file is an invalid PDF, we can try to recover it later in the consumer
-        #         mime_type = "application/pdf"
-        #     else:
-        #         raise serializers.ValidationError(
-        #             _("File type %(type)s not supported") % {"type": mime_type},
-        #         )
-
         return document.name, document_data
 
     def validate_correspondent(self, correspondent):

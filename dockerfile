@@ -13,6 +13,7 @@ RUN pipenv install
 COPY . .
 
 EXPOSE 8000
+EXPOSE 5432
 
 COPY dev.sh ./
 RUN chmod +x dev.sh

@@ -1,9 +1,14 @@
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework import filters
+import json
+
+from django_filters.rest_framework import DjangoFilterBackend
 from pathlib import Path
 from django.conf import settings
 
@@ -11,12 +16,14 @@ from documents.serializers import (
     TagSerializer,
     CorrespondentSerializer,
     DocumentTypeSerializer,
+    DocumentListSerializer,
     DocumentDetailSerializer,
     PostDocumentSerializer,
     ProjectSerializer,
+    NotesSerializer,
 )
 
-from documents.serializers import (
+from documents.models import (
     Document,
     Project,
     Tag,
@@ -29,46 +36,87 @@ import hashlib
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
+    filter_backends=[DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["status",]
+    search_fields = ["title", "description"]
+    ordering_fields = ["start_date"]
 
 class TagViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = DocumentType.objects.all()
     def get_serializer(self, *args, **kwargs):
         pass
 
 
 class CorrespondentViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = DocumentType.objects.all()
     serializer_class = CorrespondentSerializer
 
 
 class DocumentTypeViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = DocumentType.objects.all()
     serializer_class = DocumentTypeSerializer
+
+
+class NoteViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Note.objects.all()
+    serializer_class = NotesSerializer
+
+    filter_backends=[DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ["document"]
+    ordering_fields = ["created"]
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user = request.user.id
+        document = serializer.validated_data["document"]
+        note = serializer.validated_data["note"]
+
+        note = Note.objects.create(
+            note=note,
+            user=user,
+            document=document,
+        )
+        response = NotesSerializer(note)
+        return Response(
+            {"status": "success", "note": response.data},
+            status=status.HTTP_201_CREATED
+        )
+        
     
 
 class DocumentDetailViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = Document.objects.all()
-    serializer_class = DocumentDetailSerializer
+    filter_backends=[DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["tags", "project", "document_type", ]
+    ordering_fields = ["created", "added", "project"]
 
 
-class PostDocumentView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-    serializer_class = PostDocumentSerializer
-    queryset = Document.objects.all()
-    permission_classes=[AllowAny]
+    def get_serializer_class(self):
+        if self.action == "list":
+            return DocumentListSerializer
+        elif self.action == "retrieve" :
+            return DocumentDetailSerializer
+        return PostDocumentSerializer
 
-    def get_serializer(self, data):
-        return self.serializer_class(data=data)
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -109,3 +157,6 @@ class PostDocumentView(APIView):
             {"status": "success", "id": document.id}, 
             status=status.HTTP_201_CREATED
         )
+
+
+    
