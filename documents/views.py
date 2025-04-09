@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework import filters
+from django_filters.rest_framework import FilterSet, DateFilter
+from rest_framework.pagination import PageNumberPagination
 import json
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -34,6 +36,20 @@ from documents.models import (
 import magic
 import hashlib
 
+class SetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = "page_size"
+    max_pages_size = 1000
+
+class ProjectFilter(FilterSet):
+    start_date_min = DateFilter(field_name="start_date", lookup_expr="gte")
+    start_date_max = DateFilter(field_name="start_date", lookup_expr="lte")
+
+    class Meta:
+        model = Project
+        fields = {
+            'status': ['exact'],
+        }
 
 class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
@@ -41,7 +57,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
 
     filter_backends=[DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status",]
+    filterset_class = ProjectFilter
     search_fields = ["title", "description"]
     ordering_fields = ["start_date"]
 
@@ -98,14 +114,26 @@ class NoteViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
         
+class DocumentFilter(FilterSet):
+    created_min = DateFilter(field_name="created", lookup_expr="gte")
+    created_max = DateFilter(field_name="created", lookup_expr="lte")
     
+    class Meta:
+        model = Document
+        fields = {
+            'project': ['exact'],
+            'tags': ['exact'],
+            'document_type': ['exact'],
+        }
+
 
 class DocumentDetailViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = Document.objects.all()
     filter_backends=[DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["tags", "project", "document_type", ]
+    filterset_class = DocumentFilter
     ordering_fields = ["created", "added", "project"]
+    pagination_class = SetPagination
 
 
     def get_serializer_class(self):
@@ -117,8 +145,16 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
+        tags_raw = request.data.get('tags')
+        if isinstance(tags_raw, str):
+            try:
+                request.data._mutable = True
+                request.data['tags'] = json.loads(tags_raw)[0]
+            except Exception:
+                pass
+ 
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True) 
 
         doc_name, doc_data = serializer.validated_data.get("document")
         correspondent_id = serializer.validated_data.get("correspondent")

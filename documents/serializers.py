@@ -186,7 +186,6 @@ class PostDocumentSerializer(serializers.Serializer):
     )
 
     Project = serializers.PrimaryKeyRelatedField(
-        many=True,
         queryset=Project.objects.all(),
         label="Project",
         write_only=True,
@@ -211,7 +210,7 @@ class PostDocumentSerializer(serializers.Serializer):
             return None
 
     def validate_tags(self, tags):
-        if tags:
+        if tags: 
             return [tag.id for tag in tags]
         else:
             return None

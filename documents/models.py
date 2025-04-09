@@ -91,7 +91,7 @@ class StoragePath(models.Model):
         verbose_name_plural = _("storage paths")
 
 
-class Document(models.Model):
+class Document(SoftDeleteModel):
     STORAGE_TYPE_UNENCRYPTED = _("unencrypted")
     STORAGE_TYPE_GPG = _("gpg")
     STORAGE_TYPES = (
