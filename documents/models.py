@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from django_softdelete.models import SoftDeleteModel
+import base64
 if settings.AUDIT_LOG_ENABLED:
     from auditlog.registry import auditlog
 
@@ -293,10 +294,10 @@ class Document(SoftDeleteModel):
         return webp_file_path.resolve()
     
     @property
-    def thumbnail_file(self):
+    def thumbnail_str(self):
         file_path = Path(self.thumbnail_path)
         if file_path.exists():
-            return file_path.open()
+            return base64.b64encode(file_path.open("rb").read()).decode('utf-8')
         else:
             return None
     

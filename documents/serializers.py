@@ -80,7 +80,7 @@ class DocumentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ["id", "title", "tags", "created_date", "page_count","thumbnail_file"]
+        fields = ["id", "title", "tags", "created_date", "page_count", "thumbnail_str"]
 
 
 class CorrespondentField(serializers.PrimaryKeyRelatedField):
