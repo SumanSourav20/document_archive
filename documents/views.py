@@ -103,7 +103,7 @@ class NoteViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        user = request.user.id
+        user = request.user
         document = serializer.validated_data["document"]
         note = serializer.validated_data["note"]
 
@@ -149,6 +149,7 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
         tags_raw = request.data.get('tags')
         if isinstance(tags_raw, str):
             try:
@@ -171,6 +172,8 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
         tag_ids = serializer.validated_data.get("tags")
         title = serializer.validated_data.get("title")
         created = serializer.validated_data.get("created")
+
+        project = serializer.validated_data.get("project")
 
         existing_document = Document.objects.filter(checksum=checksum).first()
         if existing_document:
@@ -198,6 +201,7 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
             correspondent_id=correspondent_id,
             document_type_id=document_type_id,
             created=created,
+            project=project,
             mime_type=mime_type,
             storage_type=Document.STORAGE_TYPE_UNENCRYPTED,
             checksum=checksum

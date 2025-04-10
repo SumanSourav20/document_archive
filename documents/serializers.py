@@ -188,7 +188,7 @@ class PostDocumentSerializer(serializers.Serializer):
         required=False,
     )
 
-    Project = serializers.PrimaryKeyRelatedField(
+    project = serializers.PrimaryKeyRelatedField(
         queryset=Project.objects.all(),
         label="Project",
         write_only=True,

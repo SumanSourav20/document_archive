@@ -2,13 +2,14 @@ services:
 
   backend:
     build: .
-    command: sh -c "chmod +x ./dev.sh && ./dev.sh"
+    command: ./dev.sh
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
+      - redis
     environment:
       - DEBUG=1
       - POSTGRES_USER=${POSTGRES_USER}
@@ -16,6 +17,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
   db:
     image: postgres:latest
     restart: always
@@ -27,8 +31,32 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  celery:
+    build: .
+    command: sh -c "chmod +x ./celery.sh && ./celery.sh"
+    volumes:
+      - .:/app
+    depends_on:
+      - backend
+      - redis
+    environment:
+      - DEBUG=1
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
 volumes:
   postgres_data:
-  
+  redis_data:

@@ -1,21 +1,27 @@
-FROM python:3.13-slim
+FROM ubuntu:24.04
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir pipenv
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    libmagic-dev \
+    libreoffice \
+    ghostscript \
+    redis-server \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update \
+    && apt-get install -y python3.13
 
-RUN apt-get update && apt-get install -y libmagic-dev
+RUN apt install pipenv -y
 
 COPY Pipfile* ./
 
-RUN pipenv install
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv --python /usr/bin/python3.13 install
 
 COPY . .
 
 EXPOSE 8000
-EXPOSE 5432
 
-COPY dev.sh ./
-RUN chmod +x dev.sh
+RUN chmod +x ./dev.sh
 
 CMD ["./dev.sh"]
