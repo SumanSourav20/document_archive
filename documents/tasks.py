@@ -53,7 +53,6 @@ def generate_pdf_archive(document):
     
     # Base filename for the archive (without extension)
     archive_base = f"{document.checksum}_archive"
-    temp_output_path = Path(settings.ARCHIVE_DIR) / f"{archive_base}_temp.pdf"
     final_output_path = Path(settings.ARCHIVE_DIR) / f"{archive_base}.pdf"
     
     try:

@@ -160,15 +160,28 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True) 
 
-        doc_name, doc_data = serializer.validated_data.get("document")
+        doc_info = serializer.validated_data.get("document")
+        doc_name = doc_info["name"]
+        doc_data = doc_info["data"]
+        mime_type = doc_info["mime_type"]
+        checksum = doc_info["checksum"]
+
         correspondent_id = serializer.validated_data.get("correspondent")
         document_type_id = serializer.validated_data.get("document_type")
         tag_ids = serializer.validated_data.get("tags")
         title = serializer.validated_data.get("title")
         created = serializer.validated_data.get("created")
 
-        mime_type = magic.from_buffer(doc_data, mime=True)
-        checksum = hashlib.md5(doc_data).hexdigest()
+        existing_document = Document.objects.filter(checksum=checksum).first()
+        if existing_document:
+            return Response(
+                {
+                    "status": "duplicate", 
+                    "message": "This document already exists in the system", 
+                    "id": existing_document.id
+                },
+                status=status.HTTP_200_OK
+            )
 
         filename = f"{checksum}_{doc_name}"
         full_path = Path(settings.ORIGINAL_DIR) / filename

@@ -14,6 +14,9 @@ from documents.models import (
 
 from documents.validators import hex_color_validator
 
+import magic
+import hashlib
+
 User = get_user_model()
 
 class DocumentTypeSerializer(serializers.ModelSerializer):
@@ -192,10 +195,45 @@ class PostDocumentSerializer(serializers.Serializer):
         required=False,
     )
 
-
+    SUPPORTED_MIME_TYPES = [
+        # PDF
+        'application/pdf',
+        # Office documents
+        'application/msword',
+        'application/vnd.ms-excel',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.oasis.opendocument.text',
+        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.oasis.opendocument.presentation',
+        # Images
+        'image/jpeg',
+        'image/png',
+        'image/tiff',
+        'image/gif',
+        'image/webp',
+        'image/svg+xml',
+    ]
+    
     def validate_document(self, document):
         document_data = document.file.read()
-        return document.name, document_data
+        
+        mime_type = magic.from_buffer(document_data, mime=True)
+        if mime_type not in self.SUPPORTED_MIME_TYPES:
+            raise serializers.ValidationError(
+                f"Unsupported file type: {mime_type}. Only office documents, PDFs, and images are supported."
+            )
+            
+        checksum = hashlib.md5(document_data).hexdigest()
+            
+        return {
+            "name": document.name,
+            "data": document_data,
+            "mime_type": mime_type,
+            "checksum": checksum
+        }
 
     def validate_correspondent(self, correspondent):
         if correspondent:
