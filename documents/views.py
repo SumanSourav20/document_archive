@@ -8,11 +8,13 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework import filters
 from django_filters.rest_framework import FilterSet, DateFilter
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action
 import json
 
 from django_filters.rest_framework import DjangoFilterBackend
 from pathlib import Path
 from django.conf import settings
+from django.http import FileResponse
 
 from documents.serializers import (
     TagSerializer,
@@ -35,6 +37,7 @@ from documents.models import (
 )
 import magic
 import hashlib
+from documents.tasks import process_document
 
 class SetPagination(PageNumberPagination):
     page_size = 100
@@ -60,6 +63,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     filterset_class = ProjectFilter
     search_fields = ["title", "description"]
     ordering_fields = ["start_date"]
+    pagination_class = SetPagination
 
 class TagViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
@@ -189,10 +193,29 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
         if tag_ids:
             document.tags.set(tag_ids)
 
+        
+        process_document.delay(document.id)
+
         return Response(
             {"status": "success", "id": document.id}, 
             status=status.HTTP_201_CREATED
         )
+    
+    @action(detail=True, methods=['get'], url_path='download-archive')
+    def download_archive(self, request, pk=None):
+        document = self.get_object()
+        if document.archive_file:
+            response = FileResponse(document.archive_file)
+            response['Content-Disposition'] = f'attachment; filename="{document.original_filename or "document"}"'
+            return response
+        return Response({"detail": "No archive file available"}, status=404)
+    
+    @action(detail=True, methods=['get'], url_path='download-original')
+    def download_original(self, request, pk=None):
+        document = self.get_object()
+        response = FileResponse(document.source_file)
+        response['Content-Disposition'] = f'attachment; filename="{document.original_filename or "document"}"'
+        return response
 
 
     

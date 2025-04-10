@@ -39,7 +39,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["id", "title", "description"]
+        fields = ["id", "title", "description",]
         read_only_fileds = ["id"]
 
 class ProjectDocumentSerializer(serializers.ModelSerializer):
@@ -80,7 +80,7 @@ class DocumentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ["id", "title", "tags", "created_date", "page_count",]
+        fields = ["id", "title", "tags", "created_date", "page_count","thumbnail_file"]
 
 
 class CorrespondentField(serializers.PrimaryKeyRelatedField):

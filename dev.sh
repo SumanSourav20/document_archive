@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Installing dependencies"
+sudo apt install libreoffice ghostscript redis-server
+
 echo "Creating migrations..."
 pipenv run python manage.py makemigrations
 

@@ -177,7 +177,6 @@ class Document(SoftDeleteModel):
 
     created = models.DateTimeField(
         _("created"), 
-        default=timezone.now,
         null=True,
         blank=True,
         db_index=True,
@@ -265,8 +264,11 @@ class Document(SoftDeleteModel):
             return None
        
     @property
-    def archive_file(self) -> Path:
-        return Path(self.archive_path).open("rb")
+    def archive_file(self):
+        if self.archive_path:
+            return Path(self.archive_path).open("rb")
+        else:
+            return None
 
     @property
     def source_path(self) -> Path:
@@ -292,11 +294,15 @@ class Document(SoftDeleteModel):
     
     @property
     def thumbnail_file(self):
-        return Path(self.thumbnail_path).open("rb")
+        file_path = Path(self.thumbnail_path)
+        if file_path.exists():
+            return file_path.open()
+        else:
+            return None
     
     @property
     def created_date(self):
-        return timezone.localdate(self.created)
+        return self.created
     
 
 class Note(SoftDeleteModel):

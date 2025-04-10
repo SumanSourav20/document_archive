@@ -18,6 +18,10 @@ django-auditlog = "*"
 python-magic = "*"
 pytest = "*"
 requests = "*"
+pypdf = "*"
+celery = "*"
+redis = "*"
+pillow = "*"
 
 [dev-packages]
 
