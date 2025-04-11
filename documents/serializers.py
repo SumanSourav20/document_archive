@@ -130,14 +130,14 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
     tags = TagsField(many=True)
     document_type = DocumentTypeField(allow_null=True)
     notes = NotesSerializer(many=True, required=False, read_only=True)
-    added_date = serializers.SerializerMethodField()
-    modified_date = serializers.SerializerMethodField()
+    added_date = serializers.SerializerMethodField(read_only=True)
+    modified_date = serializers.SerializerMethodField(read_only=True)
     project_display = ProjectListSerializer(read_only=True)
 
     class Meta:
         model = Document
         fields = ["id", "title", "tags", "created_date", "page_count", "correspondent", "added_date", "modified_date", "project", "project_display", "document_type", "notes",]
-        read_only_fields = ["page_count"]
+        read_only_fields = ["page_count", "notes"]
 
     def get_added_date(self, obj):
         return timezone.localdate(obj.added)

@@ -55,7 +55,7 @@ class ProjectFilter(FilterSet):
         }
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
@@ -72,26 +72,26 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = DocumentType.objects.all()
     def get_serializer(self, *args, **kwargs):
         pass
 
 
 class CorrespondentViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = DocumentType.objects.all()
     serializer_class = CorrespondentSerializer
 
 
 class DocumentTypeViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = DocumentType.objects.all()
     serializer_class = DocumentTypeSerializer
 
 
 class NoteViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Note.objects.all()
     serializer_class = NotesSerializer
 
@@ -143,9 +143,10 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return DocumentListSerializer
-        elif self.action == "retrieve" :
+        elif self.action == "create" :
+            return PostDocumentSerializer
+        else:
             return DocumentDetailSerializer
-        return PostDocumentSerializer
 
 
     def create(self, request, *args, **kwargs):
@@ -218,6 +219,53 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
     
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        tags_raw = request.data.get('tags')
+        if isinstance(tags_raw, str):
+            try:
+                request.data._mutable = True
+                request.data['tags'] = json.loads(tags_raw)[0]
+            except Exception:
+                pass
+        
+        if 'document' in request.data:
+            if request.data._mutable:
+                del request.data['document']
+            else:
+                request.data._mutable = True
+                del request.data['document']
+                request.data._mutable = False
+        
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        if 'correspondent' in serializer.validated_data:
+            instance.correspondent_id = serializer.validated_data.get('correspondent')
+        if 'document_type' in serializer.validated_data:
+            instance.document_type_id = serializer.validated_data.get('document_type')
+        if 'title' in serializer.validated_data:
+            instance.title = serializer.validated_data.get('title')
+        if 'created' in serializer.validated_data:
+            instance.created = serializer.validated_data.get('created')
+        if 'project' in serializer.validated_data:
+            instance.project = serializer.validated_data.get('project')
+        
+        if 'tags' in serializer.validated_data:
+            tag_ids = serializer.validated_data.get('tags')
+            instance.tags.set(tag_ids)
+        
+        instance.save()
+        
+        return Response(
+            DocumentDetailSerializer(instance).data,
+            status=status.HTTP_200_OK
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+        
     @action(detail=True, methods=['get'], url_path='download-archive')
     def download_archive(self, request, pk=None):
         document = self.get_object()
