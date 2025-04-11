@@ -39,6 +39,7 @@ router.register(r"projects", ProjectViewSet)
 router.register(r"tags", TagViewSet)
 router.register(r"document-type", DocumentTypeViewSet)
 router.register(r"notes", NoteViewSet)
+router.register(r"correspondents", CorrespondentViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

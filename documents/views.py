@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.renderers import JSONRenderer
@@ -55,7 +55,7 @@ class ProjectFilter(FilterSet):
         }
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
@@ -72,26 +72,26 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = DocumentType.objects.all()
     def get_serializer(self, *args, **kwargs):
         pass
 
 
 class CorrespondentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = DocumentType.objects.all()
+    permission_classes = [AllowAny]
+    queryset = Correspondent.objects.all()
     serializer_class = CorrespondentSerializer
 
 
 class DocumentTypeViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = DocumentType.objects.all()
     serializer_class = DocumentTypeSerializer
 
 
 class NoteViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = Note.objects.all()
     serializer_class = NotesSerializer
 
@@ -138,6 +138,7 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
     filterset_class = DocumentFilter
     ordering_fields = ["created", "added", "project"]
     pagination_class = SetPagination
+    search_fields=["title"]
 
 
     def get_serializer_class(self):
@@ -229,14 +230,6 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
                 request.data['tags'] = json.loads(tags_raw)[0]
             except Exception:
                 pass
-        
-        if 'document' in request.data:
-            if request.data._mutable:
-                del request.data['document']
-            else:
-                request.data._mutable = True
-                del request.data['document']
-                request.data._mutable = False
         
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
