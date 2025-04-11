@@ -69,6 +69,7 @@ class TagViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    search_fields = ["name"]
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
