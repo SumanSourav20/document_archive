@@ -2,9 +2,6 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.renderers import JSONRenderer
 from rest_framework import filters
 from django_filters.rest_framework import FilterSet, DateFilter
 from rest_framework.pagination import PageNumberPagination
@@ -35,9 +32,8 @@ from documents.models import (
     Note,
     Correspondent,
 )
-import magic
-import hashlib
 from documents.tasks import process_document
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 class SetPagination(PageNumberPagination):
     page_size = 100
@@ -260,6 +256,13 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
         
+    @extend_schema(
+        description="Download the document's archive file",
+        responses={
+            200: OpenApiTypes.BINARY,
+            404: {"type": "object", "properties": {"detail": {"type": "string"}}}
+        },
+    )
     @action(detail=True, methods=['get'], url_path='download-archive')
     def download_archive(self, request, pk=None):
         document = self.get_object()
@@ -269,6 +272,13 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
             return response
         return Response({"detail": "No archive file available"}, status=404)
     
+
+    @extend_schema(
+        description="Download the document's original file",
+        responses={
+            200: OpenApiTypes.BINARY
+        },
+    )
     @action(detail=True, methods=['get'], url_path='download-original')
     def download_original(self, request, pk=None):
         document = self.get_object()

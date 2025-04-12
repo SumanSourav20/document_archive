@@ -33,6 +33,8 @@ from documents.views import (
     NoteViewSet,
 )
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 router = DefaultRouter()
 router.register(r"documents", DocumentDetailViewSet)
 router.register(r"projects", ProjectViewSet)
@@ -49,4 +51,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('accounts/', include('accounts.urls')),
     path('', include(router.urls)),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ] + debug_toolbar_urls()

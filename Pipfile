@@ -22,6 +22,7 @@ pypdf = "*"
 celery = "*"
 redis = "*"
 pillow = "*"
+drf-spectacular = "*"
 
 [dev-packages]
 
