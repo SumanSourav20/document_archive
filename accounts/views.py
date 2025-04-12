@@ -14,7 +14,6 @@ from accounts.serializers import (
 from accounts.serializers import (
     ActivationResponseSerializer,
     PasswordResetResponseSerializer,
-    ErrorResponseSerializer,
 )
 from .utils import (
     send_welcome_email,
@@ -73,8 +72,6 @@ class ActivateUserView(views.APIView):
         description="Activates a user account using the token sent by email",
         responses={
             200: ActivationResponseSerializer,
-            400: ErrorResponseSerializer,
-            404: ErrorResponseSerializer,
         },
     )
     def get(self, request, token):
@@ -113,8 +110,6 @@ class PasswordResetRequestView(views.APIView):
         request=PasswordResetRequestSerializer,
         responses={
             200: PasswordResetResponseSerializer,
-            400: ErrorResponseSerializer,
-            500: ErrorResponseSerializer,
         },
     )
     def post(self, request):
@@ -156,9 +151,6 @@ class PasswordResetVerifyView(views.APIView):
         request=PasswordResetVerifySerializer,
         responses={
             200: ActivationResponseSerializer,
-            400: ErrorResponseSerializer,
-            404: ErrorResponseSerializer,
-            500: ErrorResponseSerializer,
         },
     )
     def post(self, request):

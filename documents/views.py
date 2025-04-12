@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import filters
-from django_filters.rest_framework import FilterSet, DateFilter
+from django_filters.rest_framework import FilterSet, DateFilter, ModelMultipleChoiceFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 import json
@@ -118,12 +118,18 @@ class NoteViewSet(viewsets.ModelViewSet):
 class DocumentFilter(FilterSet):
     created_min = DateFilter(field_name="created", lookup_expr="gte")
     created_max = DateFilter(field_name="created", lookup_expr="lte")
+
+    tags = ModelMultipleChoiceFilter(
+        field_name="tags__id",
+        to_field_name="id",
+        queryset=Tag.objects.all(),
+        conjoined=True 
+    )
     
     class Meta:
         model = Document
         fields = {
             'project': ['exact'],
-            'tags': ['exact'],
             'document_type': ['exact'],
         }
 
@@ -219,6 +225,7 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        partial = kwargs.pop('partial', False)
         
         tags_raw = request.data.get('tags')
         if isinstance(tags_raw, str):
@@ -228,7 +235,7 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
             except Exception:
                 pass
         
-        serializer = self.get_serializer(instance, data=request.data)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         
         if 'correspondent' in serializer.validated_data:
@@ -254,6 +261,7 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
         
     @extend_schema(
