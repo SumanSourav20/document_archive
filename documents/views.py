@@ -294,5 +294,55 @@ class DocumentDetailViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="{document.original_filename or "document"}"'
         return response
 
+    @extend_schema(
+        description="Get statistics about documents, projects, tags, and document types",
+        responses={
+            200: {"type": "object", "properties": {
+                "total_projects": {"type": "integer"},
+                "total_documents": {"type": "integer"},
+                "total_tags": {"type": "integer"},
+                "total_document_types": {"type": "integer"},
+                "project_documents": {"type": "object", "additionalProperties": {"type": "integer"}}
+            }}
+        },
+        parameters=[
+            OpenApiParameter(name="project_id", description="Optional project ID to get document count for a specific project", required=False, type=int)
+        ]
+    )
+    @action(detail=False, methods=['get'], url_path='statistics')
+    def statistics(self, request):
+        # Count total projects, documents, tags, and document types
+        total_projects = Project.objects.count()
+        total_documents = Document.objects.count()
+        total_tags = Tag.objects.count()
+        total_document_types = DocumentType.objects.count()
+        
+        # Get project documents count
+        project_documents = {}
+        
+        # If project_id is provided, get count for that specific project
+        project_id = request.query_params.get('project_id')
+        if project_id:
+            try:
+                project = Project.objects.get(id=project_id)
+                doc_count = Document.objects.filter(project=project).count()
+                project_documents[project.title] = doc_count
+            except Project.DoesNotExist:
+                return Response({"detail": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Get count for all projects
+            projects = Project.objects.all()
+            for project in projects:
+                doc_count = Document.objects.filter(project=project).count()
+                project_documents[project.id] = doc_count
+        
+        return Response({
+            "total_projects": total_projects,
+            "total_documents": total_documents,
+            "total_tags": total_tags,
+            "total_document_types": total_document_types,
+            "project_documents": project_documents
+        })
+
 
     

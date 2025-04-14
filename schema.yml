@@ -25,18 +25,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ActivationResponse'
           description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
   /accounts/password-reset/request/:
     post:
       operationId: accounts_password_reset_request_create
@@ -65,18 +53,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PasswordResetResponse'
           description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
   /accounts/password-reset/verify/:
     post:
       operationId: accounts_password_reset_verify_create
@@ -104,24 +80,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivationResponse'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: ''
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /accounts/profiles/:
     get:
@@ -903,6 +861,7 @@ paths:
   /documents/{id}/download-archive/:
     get:
       operationId: documents_download_archive_retrieve
+      description: Download the document's archive file
       parameters:
       - in: path
         name: id
@@ -920,11 +879,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentDetail'
+                type: string
+                format: binary
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
           description: ''
   /documents/{id}/download-original/:
     get:
       operationId: documents_download_original_retrieve
+      description: Download the document's original file
       parameters:
       - in: path
         name: id
@@ -942,7 +912,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentDetail'
+                type: string
+                format: binary
           description: ''
   /notes/:
     get:
@@ -1596,17 +1567,6 @@ components:
       required:
       - id
       - name
-    ErrorResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        message:
-          type: string
-        error:
-          type: string
-      required:
-      - status
     Notes:
       type: object
       properties:

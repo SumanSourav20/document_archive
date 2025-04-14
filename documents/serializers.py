@@ -136,8 +136,11 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ["id", "title", "tags", "created_date", "page_count", "correspondent", "added_date", "modified_date", "project", "project_display", "document_type", "notes",]
+        fields = ["id", "title", "tags", "created", "page_count", "correspondent", "added_date", "modified_date", "project", "project_display", "document_type", "notes",]
         read_only_fields = ["page_count", "notes"]
+        # extra_kwargs = {
+        #     'created': {'write_only': True},
+        # }
 
     def get_added_date(self, obj):
         return timezone.localdate(obj.added)
