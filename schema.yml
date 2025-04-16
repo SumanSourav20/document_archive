@@ -915,6 +915,41 @@ paths:
                 type: string
                 format: binary
           description: ''
+  /documents/statistics/:
+    get:
+      operationId: documents_statistics_retrieve
+      description: Get statistics about documents, projects, tags, and document types
+      parameters:
+      - in: query
+        name: project_id
+        schema:
+          type: integer
+        description: Optional project ID to get document count for a specific project
+      tags:
+      - documents
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_projects:
+                    type: integer
+                  total_documents:
+                    type: integer
+                  total_tags:
+                    type: integer
+                  total_document_types:
+                    type: integer
+                  project_documents:
+                    type: object
+                    additionalProperties:
+                      type: integer
+          description: ''
   /notes/:
     get:
       operationId: notes_list
@@ -1482,9 +1517,11 @@ components:
           type: array
           items:
             type: integer
-        created_date:
+        created:
           type: string
-          readOnly: true
+          format: date-time
+          nullable: true
+          description: Document Creation or Generation Date
         page_count:
           type: integer
           readOnly: true
@@ -1517,7 +1554,6 @@ components:
       required:
       - added_date
       - correspondent
-      - created_date
       - document_type
       - id
       - modified_date
@@ -1696,9 +1732,11 @@ components:
           type: array
           items:
             type: integer
-        created_date:
+        created:
           type: string
-          readOnly: true
+          format: date-time
+          nullable: true
+          description: Document Creation or Generation Date
         page_count:
           type: integer
           readOnly: true

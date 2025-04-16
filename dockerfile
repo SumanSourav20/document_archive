@@ -1,27 +1,22 @@
-FROM ubuntu:24.04
+FROM python:3.13.2-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    libmagic-dev \
-    libreoffice \
-    ghostscript \
-    redis-server \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt-get update \
-    && apt-get install -y python3.13
+RUN pip install --no-cache-dir pipenv
 
-RUN apt install pipenv -y
+RUN apt-get update && apt-get install -y libmagic-dev libreoffice ghostscript
 
 COPY Pipfile* ./
 
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv --python /usr/bin/python3.13 install
+RUN pipenv install --python $(which python)
+
+RUN pipenv install
 
 COPY . .
 
 EXPOSE 8000
 
-RUN chmod +x ./dev.sh
+COPY production.sh ./
+RUN chmod +x production.sh
 
-CMD ["./dev.sh"]
+CMD ["pipenv", "run", "gunicorn", "document_archvie.wsgi:application", "--bind", "0.0.0.0:8000"]

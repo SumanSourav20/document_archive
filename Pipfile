@@ -23,6 +23,7 @@ celery = "*"
 redis = "*"
 pillow = "*"
 drf-spectacular = "*"
+gunicorn = "*"
 
 [dev-packages]
 
