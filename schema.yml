@@ -1333,7 +1333,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Register'
           description: ''
-  /tags/:
+  /api/tags/:
     get:
       operationId: tags_list
       tags:
@@ -1376,7 +1376,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Tag'
           description: ''
-  /tags/{id}/:
+  /api/tags/{id}/:
     get:
       operationId: tags_retrieve
       parameters:

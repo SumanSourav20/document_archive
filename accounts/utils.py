@@ -38,7 +38,7 @@ def send_welcome_email(user, request):
     token = create_verification_token(user.id, user.email)
     
     host = request.get_host()
-    verification_url = f"http://{host}/accounts/activate/{token}/"
+    verification_url = f"http://{host}/api/accounts/activate/{token}/"
     
     subject = "Verify Your Email Address"
     message = (

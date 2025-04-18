@@ -10,7 +10,7 @@ class DocumentApiClient:
     
     def __init__(self, base_url):
         self.base_url = base_url.rstrip('/')
-        self.upload_endpoint = f"{self.base_url}/document/"  # Adjust the path as needed
+        self.upload_endpoint = f"{self.base_url}/api/document/"  # Adjust the path as needed
     
     def upload_document(self, file_path, title=None, correspondent_id=None, 
                        document_type_id=None, tag_ids=None, created=None):
