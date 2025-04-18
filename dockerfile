@@ -19,4 +19,4 @@ EXPOSE 8000
 COPY production.sh ./
 RUN chmod +x production.sh
 
-CMD ["pipenv", "run", "gunicorn", "document_archvie.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["pipenv", "run", "gunicorn", "document_archive.wsgi:application", "--bind", "0.0.0.0:8000"]

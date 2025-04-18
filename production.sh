@@ -9,4 +9,4 @@ echo "Collecting static files..."
 pipenv run python manage.py collectstatic --noinput
 
 echo "Starting Server..."
-pipenv run gunicorn document_archvie.wsgi:application --bind 0.0.0.0:8000
+pipenv run gunicorn document_archive.wsgi:application --bind 0.0.0.0:8000
