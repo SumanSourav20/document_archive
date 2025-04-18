@@ -2,7 +2,7 @@ services:
 
   backend:
     build: .
-    command: ./production.sh
+    command: sh -c "chmod +x ./production.sh && ./production.sh"
     volumes:
       - .:/app
       - ${MOUNTED_DISK}${THUMBNAIL_DIR}:/app/${THUMBNAIL_DIR}
